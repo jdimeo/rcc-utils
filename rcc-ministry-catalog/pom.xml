@@ -4,11 +4,11 @@
   <parent>
     <artifactId>eri-maven-base</artifactId>
     <groupId>com.datamininglab</groupId>
-    <version>3.0.1</version>
+    <version>3.1.2</version>
   </parent>
   
   <groupId>org.rivannachurch</groupId>
-  <artifactId>rcc-song-summary</artifactId>
+  <artifactId>rcc-ministry-catalog</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
   <dependencies>
@@ -17,5 +17,15 @@
         <artifactId>eri-commons-extract</artifactId>
         <version>0.0.7</version>
     </dependency>
+    <dependency>
+        <groupId>com.datamininglab.commons</groupId>
+        <artifactId>eri-commons-lang</artifactId>
+        <version>1.4.5</version>
+    </dependency>
+    <dependency>
+	    <groupId>org.freemarker</groupId>
+	    <artifactId>freemarker</artifactId>
+	    <version>2.3.25-incubating</version>
+	</dependency>
   </dependencies>
 </project>
