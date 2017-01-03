@@ -5,12 +5,12 @@
 package org.rivanna.cht.model;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import lombok.Data;
-import lombok.Setter;
 import lombok.val;
 
 @Data
@@ -20,16 +20,26 @@ public class Ministry {
 		OPPORTUNITY
 	}
 	
-	@Setter private MinistryType type;
 	private String id;
+	private MinistryType type;
 	private Ministry parent;
 	private String name;
 	private Person elderLiason;
 	private List<Person> pointsOfContact;
+	private List<Ministry> children = new LinkedList<>();
+	
+	public void setParent(Ministry parent) {
+		this.parent = parent;
+		parent.children.add(this);
+	}
+	
+	public boolean isRoot() {
+		return parent == null;
+	}
 	
 	public <T> T getOrInfer(Function<Ministry, T> fn) {
 		val ret = fn.apply(this);
-		return parent == null || ret != null? ret : parent.getOrInfer(fn);
+		return isRoot() || ret != null? ret : parent.getOrInfer(fn);
 	}
 	
 	public static class MinistryRegistry {

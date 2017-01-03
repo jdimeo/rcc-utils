@@ -17,6 +17,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.rivanna.cht.CatalogReader;
@@ -57,13 +58,30 @@ public class XLSXCatalogReader implements CatalogReader {
 	
 	private List<Ministry> read(Workbook wb) {
 		wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
-
-		val overview = wb.getSheetAt(0);
-		val n = overview.getLastRowNum() + 1;
-		
-		List<Ministry> ret = new LinkedList<>();
+		readDirectory(wb.getSheet("Directory"));
+		return readOutline(wb.getSheet("Outline"));
+	}
+	
+	private void readDirectory(Sheet sheet) {
+		val n = sheet.getLastRowNum() + 1;
 		for (int i = 1; i < n; i++) {
-			val row = overview.getRow(i);
+			val row = sheet.getRow(i);
+			
+			val name  = LambdaUtils.apply(row.getCell(0), XLSXCatalogReader::getValue);
+			val email = LambdaUtils.apply(row.getCell(1), XLSXCatalogReader::getValue);
+			val phone = LambdaUtils.apply(row.getCell(2), XLSXCatalogReader::getValue);
+			
+			val p = people.getOrAdd(name);
+			LambdaUtils.accept(email, p::setEmail);
+			LambdaUtils.accept(phone, p::setPhone);
+		}
+	}
+	
+	private List<Ministry> readOutline(Sheet sheet) {
+		val ret = new LinkedList<Ministry>();
+		val n = sheet.getLastRowNum() + 1;
+		for (int i = 1; i < n; i++) {
+			val row = sheet.getRow(i);
 			
 			// Find any defined ID from the first 3 columns
 			val idCells = Arrays.asList(row.getCell(0), row.getCell(1), row.getCell(2));

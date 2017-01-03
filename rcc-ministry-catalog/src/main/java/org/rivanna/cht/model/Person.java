@@ -14,6 +14,11 @@ import lombok.val;
 public class Person {
 	private String name, email, phone;
 	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
 	public static class PersonRegistry {
 		private Map<String, Person> map = new HashMap<>();
 		
