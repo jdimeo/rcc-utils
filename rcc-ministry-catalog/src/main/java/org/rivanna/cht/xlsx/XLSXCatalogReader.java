@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -94,11 +95,13 @@ public class XLSXCatalogReader implements CatalogReader {
 				Utilities.valueOf(MinistryType.class, getValue(c), null)));
 			m.setElderLiason(LambdaUtils.apply(row.getCell(5), c ->
 				people.getOrAdd(getValue(c))));
-			m.setPointsOfContact(LambdaUtils.apply(row.getCell(6), c ->
-				Arrays.stream(StringUtils.split(getValue(c), ','))
-				      .map(StringUtils::trim)
-				      .map(people::getOrAdd)
-				      .collect(Collectors.toList())));
+			
+			m.setPointsOfContact(Stream.of(row.getCell(6), row.getCell(7), row.getCell(8))
+				.filter(Objects::nonNull)
+				.map(XLSXCatalogReader::getValue)
+				.map(StringUtils::trim)
+				.map(people::getOrAdd)
+				.collect(Collectors.toList()));
 			ret.add(m);
 		}
 		return ret;

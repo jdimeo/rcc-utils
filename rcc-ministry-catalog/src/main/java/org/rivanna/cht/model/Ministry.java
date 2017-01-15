@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import lombok.Data;
 import lombok.val;
 
@@ -17,7 +19,10 @@ import lombok.val;
 public class Ministry {
 	public enum MinistryType {
 		ESSENTIAL,
-		OPPORTUNITY
+		OPPORTUNITY;
+		
+		@Override
+		public String toString() { return WordUtils.capitalizeFully(name()); }
 	}
 	
 	private String id;

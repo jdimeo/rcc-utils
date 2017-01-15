@@ -4,32 +4,28 @@
  *******************************************************************************/
 package org.rivanna.cht.html;
 
-import static j2html.TagCreator.*;
+import static j2html.TagCreator.a;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.li;
+import static j2html.TagCreator.ul;
 
 import java.util.stream.Collectors;
 
 import org.rivanna.cht.model.Ministry;
+import org.rivanna.cht.model.Ministry.MinistryType;
 
 import j2html.tags.ContainerTag;
-import lombok.val;
 
 
 public class MinistryRenderer {
 	public static ContainerTag renderRoot(Ministry m) {
-		val ret = div().withClass("root-box").with(
-			div().withClass("root-title " + typeClass(m)).with(
-				a().withHref(m.getId().replace('.', '-') + ".html").withText(m.getName())
-			)
-		);
-		if (m.getPointsOfContact() != null && !m.getPointsOfContact().isEmpty()) {
-			val poc = div().withClass("root-poc");
-			m.getPointsOfContact().forEach(p -> {
-				if (!poc.children.isEmpty()) { poc.with(span(", ")); }
-				poc.with(PersonRenderer.render(p));
-			});
-			ret.with(poc);
-		}
-		return renderChildren(ret, m);
+		return renderChildren(
+			div().withClass("root-box").with(
+				div().withClass("root-title " + typeClass(m)).with(
+					a().withHref(m.getId().replace('.', '-') + ".html").withText(m.getName())
+				).with(PersonRenderer.renderList(m.getPointsOfContact()))
+			), 
+		m);
 	}
 	
 	private static ContainerTag renderChildren(ContainerTag tag, Ministry m) {
@@ -41,10 +37,18 @@ public class MinistryRenderer {
 	}
 	
 	private static ContainerTag render(Ministry m) {
-		return renderChildren(li(m.getName()).withClass(typeClass(m)), m);
+		return renderChildren(
+			li(m.getName()).withClass(typeClass(m)).with(PersonRenderer.renderList(m.getPointsOfContact())),
+		m);
 	}
 	
 	private static String typeClass(Ministry m) {
-		return m.getOrInfer(Ministry::getType).name().toLowerCase();
+		return getClass(m.getOrInfer(Ministry::getType));
 	}
+	
+	public static String getClass(MinistryType type) {
+		return "type-" + type.name().toLowerCase();
+	}
+	
+	
 }

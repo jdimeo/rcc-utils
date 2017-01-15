@@ -4,11 +4,19 @@
  *******************************************************************************/
 package org.rivanna.cht.html;
 
+import static j2html.TagCreator.a;
+import static j2html.TagCreator.span;
+import static j2html.TagCreator.text;
+import static j2html.TagCreator.unsafeHtml;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.rivanna.cht.model.Person;
 
-import static j2html.TagCreator.*;
 import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 
 public class PersonRenderer {
 
@@ -22,4 +30,9 @@ public class PersonRenderer {
 		return span(p.getName()).withClass("person");
 	}
 	
+	public static Tag renderList(List<Person> people) {
+		if (people.isEmpty()) { return text(StringUtils.EMPTY); }
+		
+		return unsafeHtml(people.stream().map(PersonRenderer::render).map(Tag::render).collect(Collectors.joining(", ", " (", ")")));
+	}
 }

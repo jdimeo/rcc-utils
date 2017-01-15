@@ -5,16 +5,20 @@ ul {
 	font-weight: bold;
 }
 
-.root-box {
+.root-box, .option-box {
 	float: left;
 	border: 1px solid black;
 	margin: 4px;
 	padding: 4px;
+}
+.root-box {
 	width: 300px;
 }
-.essential {
+
+.type-essential {
 }
-.opportunity {
+.type-opportunity {
 	font-style: italic;
 	color: gray;
+	background-color: rgb(255, 255, 204);
 }
