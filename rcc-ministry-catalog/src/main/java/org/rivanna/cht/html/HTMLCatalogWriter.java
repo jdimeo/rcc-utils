@@ -40,14 +40,22 @@ public class HTMLCatalogWriter implements CatalogWriter {
 				scriptWithInlineFile("/js/script.js")				
 			),
 			body().with(
-				ministries.stream().filter(Ministry::isRoot).map(MinistryRenderer::renderRoot).collect(Collectors.toList())
-			).with(
-				div().withClass("option-box").with(Arrays.stream(MinistryType.values()).flatMap(t -> {
+				div().withClass("option-box").with(
+					text("Show ministries by type:"), br()
+				).with(Arrays.stream(MinistryType.values()).flatMap(t -> {
 					val cls = MinistryRenderer.getClass(t);
-					val check = input().withType("checkbox").withClass(cls).withName(cls).attr(Attr.CHECKED, Attr.CHECKED);
-					val label = label(t.toString()).attr(Attr.FOR, cls);
-					return Stream.of(check, label, br());
+					val check = input().withType("checkbox")
+						.withClass("toggle-type")
+						.withId("toggle-" + cls)
+						.withName(cls)
+						.attr(Attr.CHECKED, Attr.CHECKED);
+					return Stream.of(check, label(t.toString()).attr(Attr.FOR, cls), br());
 				}).collect(Collectors.toList()))
+				.with(
+					text("Show ministries by gift:"), br()
+				).with()
+			).with(
+				ministries.stream().filter(Ministry::isRoot).map(MinistryRenderer::renderRoot).collect(Collectors.toList())
 			)
 		).render(), new File(outputFile), Charsets.UTF_8);
 	}

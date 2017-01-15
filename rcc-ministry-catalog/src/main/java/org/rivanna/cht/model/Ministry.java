@@ -31,6 +31,7 @@ public class Ministry {
 	private String name;
 	private Person elderLiason;
 	private List<Person> pointsOfContact;
+	private List<Gift> gifts;
 	private List<Ministry> children = new LinkedList<>();
 	
 	public void setParent(Ministry parent) {

@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.rivanna.cht.CatalogReader;
+import org.rivanna.cht.model.Gift;
 import org.rivanna.cht.model.Ministry;
 import org.rivanna.cht.model.Ministry.MinistryRegistry;
 import org.rivanna.cht.model.Ministry.MinistryType;
@@ -29,6 +30,7 @@ import org.rivanna.cht.model.Person.PersonRegistry;
 
 import com.datamininglab.commons.lang.LambdaUtils;
 import com.datamininglab.commons.lang.Utilities;
+import com.datamininglab.commons.logging.LogContext;
 
 import lombok.val;
 
@@ -102,6 +104,19 @@ public class XLSXCatalogReader implements CatalogReader {
 				.map(StringUtils::trim)
 				.map(people::getOrAdd)
 				.collect(Collectors.toList()));
+			
+			m.setGifts(Stream.of(row.getCell(9), row.getCell(10), row.getCell(11))
+				.filter(Objects::nonNull)
+				.map(XLSXCatalogReader::getValue)
+				.flatMap(giftName -> {
+					val g = Utilities.valueOf(Gift.class, giftName, null);
+					if (g == null) {
+						LogContext.warning("Unrecognized gift %s", giftName);
+						return Stream.empty();
+					}
+					return Stream.of(g);
+				}).collect(Collectors.toList()));
+			
 			ret.add(m);
 		}
 		return ret;
