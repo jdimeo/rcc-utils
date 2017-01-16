@@ -4,7 +4,6 @@
  *******************************************************************************/
 package org.rivanna.cht.html;
 
-import static j2html.TagCreator.a;
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.li;
 import static j2html.TagCreator.ul;
@@ -21,15 +20,13 @@ public class MinistryRenderer {
 	public static ContainerTag renderRoot(Ministry m) {
 		return renderChildren(
 			div().withClass("root-box").with(
-				div().withClass("root-title " + typeClass(m)).with(
-					a().withHref(m.getId().replace('.', '-') + ".html").withText(m.getName())
-				).with(PersonRenderer.renderList(m.getPointsOfContact()))
+				div().withClass("root-title").withText(m.getName()).with(PersonRenderer.renderList(m.getPointsOfContact()))
 			), 
 		m);
 	}
 	
 	private static ContainerTag renderChildren(ContainerTag tag, Ministry m) {
-		if (m.getChildren().isEmpty()) { return tag; }
+		if (m.getChildren().isEmpty()) { return tag.withClass(typeClass(m)); }
 		
 		return tag.with(ul().withClass("sub-ministry").with(
 			m.getChildren().stream().map(MinistryRenderer::render).collect(Collectors.toList())
@@ -38,7 +35,7 @@ public class MinistryRenderer {
 	
 	private static ContainerTag render(Ministry m) {
 		return renderChildren(
-			li(m.getName()).withClass(typeClass(m)).with(PersonRenderer.renderList(m.getPointsOfContact())),
+			li(m.getName()).with(PersonRenderer.renderList(m.getPointsOfContact())),
 		m);
 	}
 	

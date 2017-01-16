@@ -12,13 +12,17 @@ ul {
 	padding: 4px;
 }
 .root-box {
-	width: 300px;
+	width: 350px;
 }
 
 .type-essential {
+	font-weight: bold;
 }
 .type-opportunity {
 	font-style: italic;
 	color: gray;
-	background-color: rgb(255, 255, 204);
+}
+.poc-list {
+	font-size: smaller;
+	font-weight: normal;
 }

@@ -33,6 +33,7 @@ public class PersonRenderer {
 	public static Tag renderList(List<Person> people) {
 		if (people.isEmpty()) { return text(StringUtils.EMPTY); }
 		
-		return unsafeHtml(people.stream().map(PersonRenderer::render).map(Tag::render).collect(Collectors.joining(", ", " (", ")")));
+		return span().withClass("poc-list").with(
+			unsafeHtml(people.stream().map(PersonRenderer::render).map(Tag::render).collect(Collectors.joining(", ", " (", ")"))));
 	}
 }

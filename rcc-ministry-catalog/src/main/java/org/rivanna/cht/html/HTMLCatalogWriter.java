@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.rivanna.cht.CatalogWriter;
+import org.rivanna.cht.model.Gift;
 import org.rivanna.cht.model.Ministry;
 import org.rivanna.cht.model.Ministry.MinistryType;
 
@@ -53,7 +54,15 @@ public class HTMLCatalogWriter implements CatalogWriter {
 				}).collect(Collectors.toList()))
 				.with(
 					text("Show ministries by gift:"), br()
-				).with()
+				).with(Arrays.stream(Gift.values()).flatMap(t -> {
+					val cls = GiftRenderer.getClass(t);
+					val check = input().withType("checkbox")
+						.withClass("toggle-gift")
+						.withId("toggle-" + cls)
+						.withName(cls)
+						.attr(Attr.CHECKED, Attr.CHECKED);
+					return Stream.of(check, label(t.toString()).attr(Attr.FOR, cls), br());
+				}).collect(Collectors.toList()))
 			).with(
 				ministries.stream().filter(Ministry::isRoot).map(MinistryRenderer::renderRoot).collect(Collectors.toList())
 			)
