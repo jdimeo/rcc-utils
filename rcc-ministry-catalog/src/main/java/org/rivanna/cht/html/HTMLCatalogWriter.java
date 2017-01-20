@@ -54,14 +54,13 @@ public class HTMLCatalogWriter implements CatalogWriter {
 				}).collect(Collectors.toList()))
 				.with(
 					text("Show ministries by gift:"), br()
-				).with(Arrays.stream(Gift.values()).flatMap(t -> {
-					val cls = GiftRenderer.getClass(t);
+				).with(Arrays.stream(Gift.values()).flatMap(g -> {
+					val cls = GiftRenderer.getClass(g);
 					val check = input().withType("checkbox")
 						.withClass("toggle-gift")
 						.withId("toggle-" + cls)
-						.withName(cls)
-						.attr(Attr.CHECKED, Attr.CHECKED);
-					return Stream.of(check, label(t.toString()).attr(Attr.FOR, cls), br());
+						.withName(cls);
+					return Stream.of(check, label(g.toString()).withClass(GiftRenderer.getClassColor(g)).attr(Attr.FOR, cls), br());
 				}).collect(Collectors.toList()))
 			).with(
 				ministries.stream().filter(Ministry::isRoot).map(MinistryRenderer::renderRoot).collect(Collectors.toList())
