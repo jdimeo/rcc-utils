@@ -18,8 +18,8 @@ import lombok.val;
 @Data
 public class Ministry {
 	public enum MinistryType {
-		ESSENTIAL,
-		OPPORTUNITY;
+		CORE,
+		ELECTIVE;
 		
 		@Override
 		public String toString() { return WordUtils.capitalizeFully(name()); }

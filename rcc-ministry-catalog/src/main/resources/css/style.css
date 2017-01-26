@@ -15,10 +15,10 @@ ul {
 	width: 350px;
 }
 
-.type-essential {
+.type-core {
 	font-weight: bold;
 }
-.type-opportunity {
+.type-elective {
 	font-style: italic;
 	color: gray;
 }
