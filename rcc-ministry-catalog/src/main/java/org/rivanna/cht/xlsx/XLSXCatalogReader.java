@@ -38,11 +38,13 @@ public class XLSXCatalogReader implements CatalogReader {
 	private String pathToWorkbook;
 	private PersonRegistry people;
 	private MinistryRegistry ministries;
+	private XLSXRoleReader roleReader;
 	
 	public XLSXCatalogReader(String pathToWorkbook) {
 		this.pathToWorkbook = pathToWorkbook;
 		this.people = new PersonRegistry();
 		this.ministries = new MinistryRegistry();
+		this.roleReader = new XLSXRoleReader(ministries);
 	}
 	
 	@Override @SuppressWarnings("resource")
@@ -62,13 +64,16 @@ public class XLSXCatalogReader implements CatalogReader {
 	private List<Ministry> read(Workbook wb) {
 		wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
 		readDirectory(wb.getSheet("Directory"));
-		return readOutline(wb.getSheet("Outline"));
+		val ret = readOutline(wb.getSheet("Outline")); 
+		roleReader.read(wb.getSheet("Roles"));
+		return ret;
 	}
 	
 	private void readDirectory(Sheet sheet) {
 		val n = sheet.getLastRowNum() + 1;
 		for (int i = 1; i < n; i++) {
 			val row = sheet.getRow(i);
+			if (row == null) { continue; }
 			
 			val name  = LambdaUtils.apply(row.getCell(0), XLSXCatalogReader::getValue);
 			val email = LambdaUtils.apply(row.getCell(1), XLSXCatalogReader::getValue);
@@ -123,8 +128,9 @@ public class XLSXCatalogReader implements CatalogReader {
 	}
 	
 	private static final DecimalFormat DF = new DecimalFormat("#.#");
-	
-	private static String getValue(Cell c) {
+	static String getValue(Cell c) {
+		if (c == null) { return null; }
+		
 		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 			return DF.format(c.getNumericCellValue());
 		}

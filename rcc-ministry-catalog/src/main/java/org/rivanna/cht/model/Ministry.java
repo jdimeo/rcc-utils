@@ -32,11 +32,17 @@ public class Ministry {
 	private Person elderLiason;
 	private List<Person> pointsOfContact;
 	private List<Gift> gifts;
+	private List<Role> roles = new LinkedList<>();
 	private List<Ministry> children = new LinkedList<>();
 	
 	public void setParent(Ministry parent) {
 		this.parent = parent;
 		parent.children.add(this);
+	}
+	
+	public void addRole(Role role) {
+		role.setMinistry(this);
+		this.roles.add(role);
 	}
 	
 	public boolean isRoot() {
@@ -66,6 +72,11 @@ public class Ministry {
 				map.put(id, ret);
 			}
 			return ret;
+		}
+		
+		public Ministry get(String id) {
+			if (id == null) { return null; }
+			return map.get(id);
 		}
 	}
 }

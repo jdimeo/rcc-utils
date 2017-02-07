@@ -35,7 +35,10 @@ public class MinistryRenderer {
 	
 	private static ContainerTag render(Ministry m) {
 		return renderChildren(
-			li(m.getName()).with(PersonRenderer.renderList(m.getPointsOfContact())).with(GiftRenderer.renderList(m.getGifts())),
+			li(m.getName())
+				.with(PersonRenderer.renderList(m.getPointsOfContact()))
+				.with(GiftRenderer.renderList(m.getGifts()))
+				.with(RoleRenderer.renderList(m.getRoles())),
 		m);
 	}
 	

@@ -1,4 +1,5 @@
 ul {
+	padding-left: 20px;
 }
 
 .root-title {
@@ -7,16 +8,16 @@ ul {
 
 .root-box, .option-box {
 	float: left;
-	border: 1px solid black;
-	margin: 4px;
+	border: 2px solid black;
+	margin-top: 4px;
+	margin-left: 4px;
 	padding: 4px;
 }
 .root-box {
-	width: 350px;
+	width: 280px;
 }
 
 .type-core {
-	font-weight: bold;
 }
 .type-elective {
 	font-style: italic;
@@ -25,6 +26,9 @@ ul {
 .poc-list {
 	font-size: smaller;
 	font-weight: normal;
+}
+.role-link {
+	
 }
 
 .gift-red {
