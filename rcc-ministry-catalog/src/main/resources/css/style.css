@@ -50,3 +50,20 @@ ul {
 	margin: 2px;
 	color: rgb(50, 50, 50);
 }
+
+.gift-vacancy {
+	border: 1px solid red;
+	color: red;
+}
+.gift-filled {
+	border: 1px solid gray;
+	color: gray;
+}
+.gift-proposed {
+	border: 1px solid rgb(255, 201, 14);
+	color: rgb(255, 201, 14);
+}
+.gift-partially-filled {
+	border: 1px solid rgb(100, 200, 125);
+	color: rgb(100, 200, 125);
+}

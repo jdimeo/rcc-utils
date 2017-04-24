@@ -4,18 +4,17 @@
  *******************************************************************************/
 package org.rivanna.cht.xlsx;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.rivanna.cht.model.Gift;
 import org.rivanna.cht.model.Ministry;
 import org.rivanna.cht.model.Ministry.MinistryRegistry;
 import org.rivanna.cht.model.Role;
-import org.rivanna.cht.model.Role.RoleAvailability;
 import org.rivanna.cht.model.Role.RoleStatus;
 import org.rivanna.cht.model.Role.RoleType;
 
@@ -27,46 +26,35 @@ import com.google.common.collect.Lists;
 import lombok.val;
 
 public class XLSXRoleReader {
-	private static final int MAX_ROLES = 100;
-	
 	private enum RoleRow {
 		NAME,
 		MINISTRY_ID,
 		STATUS,
 		FILLED_BY,
 		FTBO,
-		BLANK1,
 		TYPE,
-		OPEN_TO,
-		BLANK2,
-		GIFT1,
-		GIFT2,
-		GIFT3,
-		GIFT4,
-		BLANK3,
-		SKILL1,
-		SKILL2,
-		SKILL3,
-		SKILL4,
-		BLANK4,
-		PERSONAILTY1,
-		PERSONAILTY2,
-		PERSONAILTY3,
-		BLANK5,
+		GIFT,
+		SKILLS,
+		PERSONAILTY,
 		TERM,
-		TIME_COMMITMENT1,
-		TIME_COMMITMENT2,
-		BLANK6,
-		RESPONSIBILITY1,
-		RESPONSIBILITY2,
-		RESPONSIBILITY3,
-		RESPONSIBILITY4,
-		RESPONSIBILITY5;
+		TIME_COMMITMENTS,
+		RESPONSIBILITIES;
 		
-		String getValue(Map<RoleRow, Row> rowMap, int col) {
-			return LambdaUtils.apply(rowMap.get(this), r -> XLSXCatalogReader.getValue(r.getCell(col)));
+		String get(Sheet sheet, Map<RoleRow, int[]> schema, int col) {
+			return Utilities.first(getAll(sheet, schema, col));
+		}
+		
+		List<String> getAll(Sheet sheet, Map<RoleRow, int[]> schema, int col) {
+			val rows = schema.get(this);
+			val ret = new ArrayList<String>(rows.length);
+			for (int row : rows) {
+				LambdaUtils.accept(XLSXCatalogReader.getValue(sheet.getRow(row).getCell(col)), ret::add);
+			}
+			return ret;
 		}
 	}
+	
+	private static final RoleRow[] ROWS = RoleRow.values();
 	
 	private MinistryRegistry ministries;
 	
@@ -75,20 +63,30 @@ public class XLSXRoleReader {
 	}
 	
 	public void read(Sheet sheet) {
-		val rowMap = new HashMap<RoleRow, Row>();
-		for (RoleRow rr : RoleRow.values()) {
-			rowMap.put(rr, sheet.getRow(rr.ordinal()));
+		Map<RoleRow, int[]> schema = new HashMap<>();
+		
+		val nRows = sheet.getLastRowNum() + 1;
+		if (nRows < RoleRow.values().length) {
+			LogContext.warning("Ignoring sheet %s; not enough rows", sheet.getSheetName());
+			return;
 		}
 		
-		// Skip row header columns
-		for (int i = 2; i < MAX_ROLES; i++) {
+		RoleRow row = null;
+		for (int r = 0, i = 0; r < nRows; r++) {
+			boolean hasHeader = XLSXCatalogReader.getValue(sheet.getRow(r).getCell(0)) != null;
+			if (row == null || hasHeader) { row = ROWS[i++]; }
+			schema.put(row, ArrayUtils.add(schema.get(row), r));
+		}	
+		
+		// Skip row header column, skip two since some fields are split between two columns
+		val nCols = sheet.getRow(0).getLastCellNum();
+		for (int i = 1; i < nCols; i += 2) {
 			Role r = new Role();
-			r.setName(RoleRow.NAME.getValue(rowMap, i));
-			if (r.getName() == null) {
-				break;
-			}
+			r.setId(RoleRow.NAME.get(sheet, schema, i));
+			r.setName(RoleRow.NAME.get(sheet, schema, i + 1));
+			if (r.getId() == null || r.getName() == null) { continue; }
 			
-			String mid = RoleRow.MINISTRY_ID.getValue(rowMap, i);
+			String mid = RoleRow.MINISTRY_ID.get(sheet, schema, i);
 			Ministry m = ministries.get(mid);
 			if (m == null) {
 				LogContext.warning("Ministry with ID %s not found in Outline tab", mid);
@@ -97,29 +95,16 @@ public class XLSXRoleReader {
 			m.addRole(r);
 			
 			// TODO: More validation/logging on enum resolution
-			r.setForBenefitOf(RoleRow.FTBO.getValue(rowMap, i));
-			r.setOpenTo(Utilities.valueOf(RoleAvailability.class, RoleRow.OPEN_TO.getValue(rowMap, i), null));
-			r.setStatus(Utilities.valueOf(RoleStatus.class, RoleRow.STATUS.getValue(rowMap, i), null));
-			r.setGifts(Lists.transform(getAll(rowMap, i,
-				RoleRow.GIFT1, RoleRow.GIFT2, RoleRow.GIFT3, RoleRow.GIFT4), n -> Utilities.valueOf(Gift.class, n, null)));
-			r.setPersonTraits(getAll(rowMap, i,
-				RoleRow.PERSONAILTY1, RoleRow.PERSONAILTY2, RoleRow.PERSONAILTY3));
-			r.setResponsibilities(getAll(rowMap, i,
-				RoleRow.RESPONSIBILITY1, RoleRow.RESPONSIBILITY2, RoleRow.RESPONSIBILITY3, RoleRow.RESPONSIBILITY4, RoleRow.RESPONSIBILITY5));
-			r.setSkills(getAll(rowMap, i,
-				RoleRow.SKILL1, RoleRow.SKILL2, RoleRow.SKILL3, RoleRow.SKILL4));
-			r.setTerm(RoleRow.TERM.getValue(rowMap, i));
-			r.setTimeCommittments(getAll(rowMap, i,
-				RoleRow.TIME_COMMITMENT1, RoleRow.TIME_COMMITMENT2));
-			r.setType(Utilities.valueOf(RoleType.class, RoleRow.TYPE.getValue(rowMap, i), null));
+			r.setForBenefitOf(RoleRow.FTBO.get(sheet, schema, i));
+			// r.setOpenTo(Utilities.valueOf(RoleAvailability.class, RoleRow.OPEN_TO.getValue(rowMap, i), null));
+			r.setStatus(Utilities.valueOf(RoleStatus.class, RoleRow.STATUS.get(sheet, schema, i), null));
+			r.setGifts(Lists.transform(RoleRow.GIFT.getAll(sheet, schema, i), n -> Utilities.valueOf(Gift.class, n, null)));
+			r.setPersonTraits(RoleRow.PERSONAILTY.getAll(sheet, schema, i));
+			r.setResponsibilities(RoleRow.RESPONSIBILITIES.getAll(sheet, schema, i));
+			r.setSkills(RoleRow.SKILLS.getAll(sheet, schema, i));
+			r.setTerm(RoleRow.TERM.get(sheet, schema, i));
+			r.setTimeCommittments(RoleRow.TIME_COMMITMENTS.getAll(sheet, schema, i));
+			r.setType(Utilities.valueOf(RoleType.class, RoleRow.TYPE.get(sheet, schema, i), null));
 		}
-	}
-	
-	private static List<String> getAll(Map<RoleRow, Row> rowMap, int col, RoleRow... rows) {
-		val ret = new LinkedList<String>();
-		for (RoleRow rr : rows) {
-			LambdaUtils.accept(rr.getValue(rowMap, col), ret::add);
-		}
-		return ret;
 	}
 }

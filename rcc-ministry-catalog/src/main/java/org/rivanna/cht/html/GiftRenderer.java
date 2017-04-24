@@ -29,7 +29,6 @@ public class GiftRenderer {
 		if (gifts.isEmpty()) { return text(StringUtils.EMPTY); }
 		
 		return span().with(Lists.transform(gifts, GiftRenderer::render));
-		
 	}
 	
 	public static Tag render(Gift gift) {

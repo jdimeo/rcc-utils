@@ -8,12 +8,17 @@ import static j2html.TagCreator.div;
 import static j2html.TagCreator.li;
 import static j2html.TagCreator.ul;
 
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 
+import org.rivanna.cht.model.Gift;
 import org.rivanna.cht.model.Ministry;
 import org.rivanna.cht.model.Ministry.MinistryType;
 
+import com.google.common.collect.ImmutableList;
+
 import j2html.tags.ContainerTag;
+import lombok.val;
 
 
 public class MinistryRenderer {
@@ -34,10 +39,12 @@ public class MinistryRenderer {
 	}
 	
 	private static ContainerTag render(Ministry m) {
+		val gifts = new LinkedHashSet<Gift>();
+		m.getRoles().forEach($ -> $.getGifts().forEach(gifts::add));
 		return renderChildren(
 			li(m.getName())
 				.with(PersonRenderer.renderList(m.getPointsOfContact()))
-				.with(GiftRenderer.renderList(m.getGifts()))
+				.with(GiftRenderer.renderList(ImmutableList.copyOf(gifts)))
 				.with(RoleRenderer.renderList(m.getRoles())),
 		m);
 	}

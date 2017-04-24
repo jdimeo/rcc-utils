@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class Role {
 	public enum RoleStatus {
-		VACANT,
+		VACANCY,
 		PARTIALLY_FILLED,
 		FILLED;
 		
@@ -36,6 +36,7 @@ public class Role {
 		PASTOR
 	}
 	
+	private String id;
 	private String name;
 	private Ministry ministry;
 	private RoleStatus status;
@@ -50,7 +51,7 @@ public class Role {
 	private List<String> timeCommittments;
 	private List<String> responsibilities;
 	
-	public String getId() {
-		return String.format("%s_%s", ministry.getId(), name.toLowerCase().replace(' ', '_'));
+	public String getFullId() {
+		return String.format("%s_%s", ministry.getId(), id);
 	}
 }
