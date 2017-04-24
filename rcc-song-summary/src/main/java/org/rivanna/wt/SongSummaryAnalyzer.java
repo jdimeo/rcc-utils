@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +48,9 @@ public class SongSummaryAnalyzer {
 	public static void main(String[] args) throws IOException {
 		DateExtractor de = DateExtractor.getInstance(LocalityLevel.LANGUAGE);
 		Map<String, Leader> leaders = new HashMap<>();
+		Map<String, Integer> songCount = new HashMap<>();
 		
-		try (FileInputStream fis = new FileInputStream("C:\\Users\\jdimeo\\Dropbox\\RCC\\RCC Song Summary.xlsx")) {
+		try (FileInputStream fis = new FileInputStream("D:\\Dropbox\\RCC\\RCC Song Summary.xlsx")) {
 			Workbook wb = new XSSFWorkbook(fis);
 			
 			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
@@ -109,6 +111,8 @@ public class SongSummaryAnalyzer {
 						}
 						list.add(d);
 						l.total++;
+						
+						songCount.put(song, songCount.getOrDefault(song, 0) + 1);
 					}
 				}
 			}
@@ -151,5 +155,11 @@ public class SongSummaryAnalyzer {
 		for (String[] arr : topSongs) {
 			System.out.println(Arrays.stream(arr).collect(Collectors.joining("\t")));
 		}
+		
+		System.out.println("Top Songs");
+		songCount.entrySet().stream()
+			.sorted(Comparator.comparing(e -> -1 * e.getValue()))
+			.filter(e -> e.getValue() > 1)
+			.forEachOrdered(e -> System.out.format("%s\t%d%n", e.getKey(), e.getValue()));
 	}
 }
