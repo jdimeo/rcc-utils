@@ -16,13 +16,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.datamininglab.commons.lang.extract.DateExtractor;
-import com.datamininglab.commons.lang.extract.LocalityLevel;
+import com.elderresearch.commons.lang.extract.DateExtractor;
+import com.elderresearch.commons.lang.extract.LocalityLevel;
 
 public class SongSummaryAnalyzer {
 	private static final int N_TOP_SONGS = 6;
@@ -50,9 +51,7 @@ public class SongSummaryAnalyzer {
 		Map<String, Leader> leaders = new HashMap<>();
 		Map<String, Integer> songCount = new HashMap<>();
 		
-		try (FileInputStream fis = new FileInputStream("D:\\Dropbox\\RCC\\RCC Song Summary.xlsx")) {
-			Workbook wb = new XSSFWorkbook(fis);
-			
+		try (FileInputStream fis = new FileInputStream(args[0]); Workbook wb = new XSSFWorkbook(fis)) {
 			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
 				Sheet ws = wb.getSheetAt(i);
 				System.out.format("Processing sheet %s..%n", ws.getSheetName());				
@@ -63,7 +62,7 @@ public class SongSummaryAnalyzer {
 				Leader[] leaderSeq = new Leader[ncol];
 				for (int c = 0; c < ncol; c++) {
 					Cell cell = header.getCell(c);
-					if (cell == null || cell.getCellType() != Cell.CELL_TYPE_STRING) { continue; }
+					if (cell == null || cell.getCellType() != CellType.STRING) { continue; }
 					
 					String s = StringUtils.remove(cell.getStringCellValue(), '*').trim();
 					if (s.isEmpty() || !s.contains(" ")) { continue; }
@@ -82,7 +81,7 @@ public class SongSummaryAnalyzer {
 				for (int r = 1; r <= ws.getLastRowNum(); r++) {
 					Row row = ws.getRow(r);
 					Cell cell = row.getCell(0);
-					if (cell == null || cell.getCellType() != Cell.CELL_TYPE_STRING) { break; }
+					if (cell == null || cell.getCellType() != CellType.STRING) { break; }
 					
 					String song = cell.getStringCellValue().trim();
 					if (song.isEmpty()) { continue; }
@@ -94,7 +93,7 @@ public class SongSummaryAnalyzer {
 						if (cell == null) { continue; }
 						
 						Date d = null;
-						if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						if (cell.getCellType() == CellType.NUMERIC) {
 							d = cell.getDateCellValue();
 						} else {
 							String s = StringUtils.substringBefore(cell.getStringCellValue(), " ");
