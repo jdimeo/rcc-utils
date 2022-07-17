@@ -18,13 +18,14 @@ import org.rivanna.cht.model.Role;
 import org.rivanna.cht.model.Role.RoleStatus;
 import org.rivanna.cht.model.Role.RoleType;
 
-import com.datamininglab.commons.lang.LambdaUtils;
-import com.datamininglab.commons.lang.Utilities;
-import com.datamininglab.commons.logging.LogContext;
+import com.elderresearch.commons.lang.LambdaUtils;
+import com.elderresearch.commons.lang.Utilities;
 import com.google.common.collect.Lists;
 
 import lombok.val;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class XLSXRoleReader {
 	private enum RoleRow {
 		NAME,
@@ -67,7 +68,7 @@ public class XLSXRoleReader {
 		
 		val nRows = sheet.getLastRowNum() + 1;
 		if (nRows < RoleRow.values().length) {
-			LogContext.warning("Ignoring sheet %s; not enough rows", sheet.getSheetName());
+			log.warn("Ignoring sheet {}; not enough rows", sheet.getSheetName());
 			return;
 		}
 		
@@ -89,7 +90,7 @@ public class XLSXRoleReader {
 			String mid = RoleRow.MINISTRY_ID.get(sheet, schema, i);
 			Ministry m = ministries.get(mid);
 			if (m == null) {
-				LogContext.warning("Ministry with ID %s not found in Outline tab", mid);
+				log.warn("Ministry with ID {} not found in Outline tab", mid);
 				continue;
 			}
 			m.addRole(r);

@@ -6,7 +6,7 @@ package org.rivanna.cht.model;
 
 import java.util.List;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 import lombok.Data;
 

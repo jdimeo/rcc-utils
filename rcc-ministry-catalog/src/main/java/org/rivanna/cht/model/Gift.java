@@ -4,7 +4,7 @@
  *******************************************************************************/
 package org.rivanna.cht.model;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 public enum Gift {
 	ADMINISTRATION(GiftColor.GREEN),

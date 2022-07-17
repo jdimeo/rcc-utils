@@ -8,7 +8,7 @@ import static j2html.TagCreator.*;
 
 import java.util.List;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.rivanna.cht.model.Role;
 
 import com.google.common.collect.Lists;

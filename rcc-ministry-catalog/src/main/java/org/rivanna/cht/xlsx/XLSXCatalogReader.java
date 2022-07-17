@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,8 +28,8 @@ import org.rivanna.cht.model.Ministry.MinistryRegistry;
 import org.rivanna.cht.model.Ministry.MinistryType;
 import org.rivanna.cht.model.Person.PersonRegistry;
 
-import com.datamininglab.commons.lang.LambdaUtils;
-import com.datamininglab.commons.lang.Utilities;
+import com.elderresearch.commons.lang.LambdaUtils;
+import com.elderresearch.commons.lang.Utilities;
 
 import lombok.val;
 
@@ -47,7 +48,7 @@ public class XLSXCatalogReader implements CatalogReader {
 	
 	@Override @SuppressWarnings("resource")
 	public List<Ministry> read() throws IOException {
-		try (val is = Utilities.getResourceAsStream(getClass(), pathToWorkbook)) {
+		try (val is = Utilities.getResourceOrFile(getClass(), pathToWorkbook)) {
 			val pkg = OPCPackage.open(is);
 			try {
 				return read(new XSSFWorkbook(pkg));
@@ -60,7 +61,7 @@ public class XLSXCatalogReader implements CatalogReader {
 	}
 	
 	private List<Ministry> read(Workbook wb) {
-		wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
+		wb.setMissingCellPolicy(Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
 		readDirectory(wb.getSheet("Directory"));
 		val ret = readOutline(wb.getSheet("Outline")); 
 		roleReader.read(wb.getSheet("Roles"));
@@ -117,7 +118,7 @@ public class XLSXCatalogReader implements CatalogReader {
 	static String getValue(Cell c) {
 		if (c == null) { return null; }
 		
-		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+		if (c.getCellType() == CellType.NUMERIC) {
 			return DF.format(c.getNumericCellValue());
 		}
 		return StringUtils.defaultIfBlank(c.getStringCellValue(), null);

@@ -1,31 +1,38 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <parent>
-    <artifactId>eri-maven-base</artifactId>
-    <groupId>com.datamininglab</groupId>
-    <version>3.1.2</version>
-  </parent>
-  
-  <groupId>org.rivannachurch</groupId>
-  <artifactId>rcc-ministry-catalog</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  <dependencies>
-    <dependency>
-  		<groupId>org.apache.poi</groupId>
-   		<artifactId>poi-ooxml</artifactId>
-   		<version>3.9</version>
-    </dependency>
-    <dependency>
-        <groupId>com.datamininglab.commons</groupId>
-        <artifactId>eri-commons-lang</artifactId>
-        <version>1.4.5</version>
-    </dependency>
-    <dependency>
-	    <groupId>com.j2html</groupId>
-	    <artifactId>j2html</artifactId>
-	    <version>0.7</version>
-	</dependency>
-  </dependencies>
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.elderresearch.maven-parent</groupId>
+		<artifactId>maven-parent</artifactId>
+		<version>6.3.0</version>
+	</parent>
+
+	<groupId>org.rivannachurch</groupId>
+	<artifactId>rcc-ministry-catalog</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.elderresearch.commons-jvm</groupId>
+			<artifactId>commons-jvm</artifactId>
+			<version>2.6.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.j2html</groupId>
+			<artifactId>j2html</artifactId>
+			<version>1.6.0</version>
+		</dependency>
+	</dependencies>
 </project>

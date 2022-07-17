@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.rivanna.cht.html.HTMLCatalogWriter;
 import org.rivanna.cht.xlsx.XLSXCatalogReader;
 
-import com.datamininglab.commons.lang.Utilities;
+import com.elderresearch.commons.lang.Utilities;
 
 public class GenerateMinistryCatalog {
 	private static final String DEF_CATALOG = "/RCC Ministry Catalog.xlsx",
