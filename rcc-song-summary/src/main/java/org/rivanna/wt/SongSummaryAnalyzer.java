@@ -30,6 +30,7 @@ public class SongSummaryAnalyzer {
 	
 	private static final Map<String, String> LEADER_FIXES = new HashMap<String, String>() {{
 		put("JELDER",   "JE");
+		put("JEJ",      "JE");
 		put("WALT",     "WL");
 		put("SCOTT",    "SK");
 		put("LEIGH",    "LA");
@@ -39,6 +40,7 @@ public class SongSummaryAnalyzer {
 		put("YOUTH",    "YWT");
 		put("JK",       "JD");
 		put("JEN",      "JD");
+		put("E4",       "JOINT");
 	}};
 	
 	private static class Leader {
@@ -68,6 +70,8 @@ public class SongSummaryAnalyzer {
 					if (s.isEmpty() || !s.contains(" ")) { continue; }
 					
 					String lname = StringUtils.substringBefore(s, " ").trim().toUpperCase();
+					if (StringUtils.equalsIgnoreCase(lname, "CANCELED")) { continue; }
+					
 					lname = LEADER_FIXES.getOrDefault(lname, lname);
 					Leader l = leaders.get(lname);
 					if (l == null) {
