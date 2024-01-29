@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Cell;
@@ -22,12 +24,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.elderresearch.commons.lang.CalendarUtils;
+import com.elderresearch.commons.lang.Utilities;
 import com.elderresearch.commons.lang.extract.DateExtractor;
 import com.elderresearch.commons.lang.extract.LocalityLevel;
 
 public class SongSummaryAnalyzer {
 	private static final int N_TOP_SONGS = 6;
 	
+	@SuppressWarnings("serial")
 	private static final Map<String, String> LEADER_FIXES = new HashMap<String, String>() {{
 		put("JELDER",   "JE");
 		put("JEJ",      "JE");
@@ -49,11 +54,14 @@ public class SongSummaryAnalyzer {
 	}
 	
 	public static void main(String[] args) throws IOException {
+		int year = NumberUtils.toInt(Utilities.get(args, 1));
+		System.out.println(year > 0? "ONLY YEAR " + year : "ALL TIME");
+		
 		DateExtractor de = DateExtractor.getInstance(LocalityLevel.LANGUAGE);
 		Map<String, Leader> leaders = new HashMap<>();
 		Map<String, Integer> songCount = new HashMap<>();
 		
-		try (FileInputStream fis = new FileInputStream(args[0]); Workbook wb = new XSSFWorkbook(fis)) {
+		try (FileInputStream fis = new FileInputStream(Utilities.get(args, 0)); Workbook wb = new XSSFWorkbook(fis)) {
 			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
 				Sheet ws = wb.getSheetAt(i);
 				System.out.format("Processing sheet %s..%n", ws.getSheetName());				
@@ -106,6 +114,8 @@ public class SongSummaryAnalyzer {
 						}
 						if (d == null) { continue; }
 						
+						if (year > 0 && CalendarUtils.at(d).get(Calendar.YEAR) != year) { continue; }
+						
 						Leader l = leaderSeq[c];
 						List<Date> list = l.songs.get(song);
 						if (list == null) {
@@ -126,6 +136,8 @@ public class SongSummaryAnalyzer {
 		MutableInt leaderIdx = new MutableInt();
 		String[][] topSongs = new String[N_TOP_SONGS + 1][leaders.size()];
 		for (Entry<String, Leader> e : leaders.entrySet()) {
+			if (e.getValue().total < 1) { continue; }
+			
 			int unq = e.getValue().songs.size();
 			
 			MutableInt once = new MutableInt();
