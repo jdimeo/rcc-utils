@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -46,6 +47,15 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	
 	@Override
 	public void accept(Path p, OpenSongSong song) {
+		if (StringUtils.isBlank(song.getProvenance())) {
+			var authorInfo = StringUtils.lowerCase(String.join(" ", song.getAuthor(), song.getCopyright()));
+			if (StringUtils.containsAny(authorInfo, "johnson", "bethel", "riddle")) {
+				log.info(p.toString() + " appears to be Bethel");
+			} else if (StringUtils.containsAny(authorInfo, "furtick", "elevation")) {
+				log.info(p.toString() + " appears to be Elevation");
+			}
+		}
+		
 		var r = sheet.createRow(row++);
 		newCell(r, 0, p.getParent().getFileName().toString());
 		newCell(r, 1, song.getTitle());
