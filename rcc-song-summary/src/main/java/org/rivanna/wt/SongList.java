@@ -66,6 +66,9 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		log.debug("{} normalized to {}", song.getTitle(), normTitle);
 		
 		var count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
+		if (count == null) {
+			count = stats.getSongCount().remove(stats.getSongTitles().get(SongStats.normalizeTitle(p.getFileName().toString())));
+		}
 		
 		var r = sheet.createRow(row++);
 		newCell(r, 0, p.getParent().getFileName().toString());
