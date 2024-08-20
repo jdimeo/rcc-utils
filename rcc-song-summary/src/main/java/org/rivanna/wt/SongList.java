@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -21,7 +22,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InvalidFormatException {
 		var mapper = XmlMapper.builder().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
 		try (var list = new SongList()) {
 			Files.walk(Paths.get(SystemUtils.USER_HOME, "Dropbox", "RCC WT", "OpenSong Database", "Songs")).filter(Files::isRegularFile).forEach(path -> {
@@ -36,19 +37,11 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	
 	private Workbook wb;
 	private Sheet sheet;
-	private int row;
+	private int row = 1;
 	
-	public SongList() {
-		wb = new XSSFWorkbook();
-		sheet = wb.createSheet("Song List");
-		
-		var header = sheet.createRow(row++);
-		newCell(header, 0, "Folder");
-		newCell(header, 1, "Title");
-		newCell(header, 2, "Provenance");
-		newCell(header, 3, "Approval Status");
-		newCell(header, 4, "Author");
-		newCell(header, 5, "Copyright");
+	public SongList() throws InvalidFormatException, IOException {
+		wb = new XSSFWorkbook(Path.of("RCC Song List Template.xlsx").toFile());
+		sheet = wb.getSheetAt(0);
 	}
 	
 	@Override
