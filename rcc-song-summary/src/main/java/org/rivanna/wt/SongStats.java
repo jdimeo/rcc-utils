@@ -134,6 +134,10 @@ public class SongStats {
 		return ret;
 	}
 	
+	private static final String[] KEYS = {
+		" a", " b", " c", " d", " e", " g"	
+	};
+	
 	public static String normalizeTitle(String title) {
 		var ret = title.toLowerCase();
 		
@@ -143,10 +147,12 @@ public class SongStats {
 			ret = ret.substring(0, i);
 		}
 		
-		ret = StringUtils.replaceChars(ret, ",'’!", null);
+		ret = StringUtils.replaceChars(ret, ",'’!()", null);
 		
 		// Remove song key indicators
-		ret = StringUtils.removeEnd(StringUtils.removeEnd(StringUtils.removeEnd(StringUtils.removeEnd(ret, " a"), " e"), " g"), " c");
+		for (var key : KEYS) {
+			ret = StringUtils.removeEnd(ret, key);
+		}
 		
 		return StringUtils.trimToNull(ret);
 	}
