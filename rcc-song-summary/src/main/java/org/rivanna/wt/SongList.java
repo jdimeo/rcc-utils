@@ -25,7 +25,7 @@ import lombok.extern.log4j.Log4j2;
 public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	public static void main(String[] args) throws IOException, InvalidFormatException {
 		var mapper = XmlMapper.builder().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
-		try (var list = new SongList()) {
+		try (var list = new SongList(Path.of(SystemUtils.USER_HOME, "Dropbox", "RCC WT", "RCC Song Summary.xlsx"))) {
 			Files.walk(Paths.get(SystemUtils.USER_HOME, "Dropbox", "RCC WT", "OpenSong Database", "Songs")).filter(Files::isRegularFile).forEach(path -> {
 				try {
 					list.accept(path, mapper.readValue(path.toFile(), OpenSongSong.class));
@@ -39,10 +39,12 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	private Workbook wb;
 	private Sheet sheet;
 	private int row = 1;
+	private SongStats stats;
 	
-	public SongList() throws InvalidFormatException, IOException {
+	public SongList(Path statsPath) throws InvalidFormatException, IOException {
 		wb = new XSSFWorkbook(Path.of("RCC Song List Template.xlsx").toFile());
 		sheet = wb.getSheetAt(0);
+		stats = SongStats.parse(statsPath, 0);
 	}
 	
 	@Override
@@ -56,17 +58,22 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 			}
 		}
 		
+		var count = stats.getSongCount().remove(stats.getSongTitles().get(StringUtils.lowerCase(song.getTitle())));
+		
 		var r = sheet.createRow(row++);
 		newCell(r, 0, p.getParent().getFileName().toString());
 		newCell(r, 1, song.getTitle());
 		newCell(r, 2, song.getProvenance());
 		newCell(r ,3, song.getSongApproval());
-		newCell(r, 4, song.getAuthor());
-		newCell(r, 5, song.getCopyright());
+		if (count != null) { r.createCell(4, CellType.NUMERIC).setCellValue(count); }
+		newCell(r, 5, song.getAuthor());
+		newCell(r, 6, song.getCopyright());
 	}
 	
 	@Override
 	public void close() throws IOException {
+		log.info("Remaining songs: {}", stats.getSongCount());
+		
 		try (var os = Files.newOutputStream(Path.of("RCC Song List.xlsx"))) {
 			wb.write(os);	
 		}

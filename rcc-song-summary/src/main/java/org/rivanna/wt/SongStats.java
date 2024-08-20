@@ -1,7 +1,8 @@
 package org.rivanna.wt;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +34,7 @@ public class SongStats {
 	
 	private Map<String, Leader> leaders = new HashMap<>();
 	private Map<String, Integer> songCount = new HashMap<>();
+	private Map<String, String> songTitles = new HashMap<>();
 	
 	@SuppressWarnings("serial")
 	private static final Map<String, String> LEADER_FIXES = new HashMap<String, String>() {{
@@ -50,11 +52,11 @@ public class SongStats {
 		put("E4",       "JOINT");
 	}};
 	
-	public static SongStats parse(String file, int year) throws IOException {
+	public static SongStats parse(Path file, int year) throws IOException {
 		DateExtractor de = DateExtractor.getInstance(LocalityLevel.LANGUAGE);
 		
 		var ret = new SongStats();
-		try (FileInputStream fis = new FileInputStream(file); Workbook wb = new XSSFWorkbook(fis)) {
+		try (var fis = Files.newInputStream(file); Workbook wb = new XSSFWorkbook(fis)) {
 			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
 				Sheet ws = wb.getSheetAt(i);
 				System.out.format("Processing sheet %s..%n", ws.getSheetName());				
@@ -123,6 +125,11 @@ public class SongStats {
 				}
 			}
 		}
+		
+		ret.songCount.keySet().forEach(title -> {
+			ret.songTitles.put(StringUtils.lowerCase(title), title);
+		});
+		
 		return ret;
 	}
 }

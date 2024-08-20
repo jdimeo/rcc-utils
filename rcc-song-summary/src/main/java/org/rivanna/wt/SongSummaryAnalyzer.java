@@ -1,6 +1,7 @@
 package org.rivanna.wt;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -23,7 +24,7 @@ public class SongSummaryAnalyzer {
 		int year = NumberUtils.toInt(Utilities.get(args, 1));
 		System.out.println(year > 0? "ONLY YEAR " + year : "ALL TIME");
 		
-		var stats = SongStats.parse(Utilities.get(args, 0), year);
+		var stats = SongStats.parse(Path.of(Utilities.get(args, 0)), year);
 		
 		System.out.println("Leader\tSets\tSongs/Set\tUnique Songs\tTotal Songs\tUnique/Total\tSongs done once");
 		
