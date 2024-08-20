@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jooq.lambda.Seq;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -78,7 +79,8 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	
 	@Override
 	public void close() throws IOException {
-		log.info("Remaining songs: {} {}", stats.getSongCount().size(), stats.getSongCount());
+		log.info("Remaining songs: {}", stats.getSongCount().size());
+		Seq.seq(stats.getSongCount()).sorted($ -> -$.v2).forEach($ -> log.info("{} {}", $.v2, $.v1));
 		
 		try (var os = Files.newOutputStream(Path.of("RCC Song List.xlsx"))) {
 			wb.write(os);	

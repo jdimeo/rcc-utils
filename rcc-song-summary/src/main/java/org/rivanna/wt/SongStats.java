@@ -145,7 +145,8 @@ public class SongStats {
 		
 		ret = StringUtils.replaceChars(ret, ",'’!", null);
 		
-		ret = StringUtils.substringBefore(ret, "(");
+		// Remove song key indicators
+		ret = StringUtils.removeEnd(StringUtils.removeEnd(StringUtils.removeEnd(StringUtils.removeEnd(ret, " a"), " e"), " g"), " c");
 		
 		return StringUtils.trimToNull(ret);
 	}
