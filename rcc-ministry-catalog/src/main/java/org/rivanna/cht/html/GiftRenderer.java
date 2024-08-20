@@ -33,7 +33,7 @@ public class GiftRenderer {
 	
 	public static Tag render(Gift gift) {
 		return span(gift.name().substring(0, 1))
-			.withClass(StringUtils.joinWith(" ", getClass(gift), getClassColor(gift), "gift-box"))
+			.withClass(String.join(" ", getClass(gift), getClassColor(gift), "gift-box"))
 			.attr(Attr.TITLE, gift.toString())
 			.attr(Attr.STYLE, "display: none;");
 	}

@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>com.j2html</groupId>
 			<artifactId>j2html</artifactId>
-			<version>1.6.0</version>
+			<version>0.7</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -168,7 +169,7 @@ public class SongSummaryAnalyzer {
 		
 		System.out.println("Typical Set");
 		for (String[] arr : topSongs) {
-			System.out.println(Arrays.stream(arr).collect(Collectors.joining("\t")));
+			System.out.println(Arrays.stream(arr).filter(Objects::nonNull).collect(Collectors.joining("\t")));
 		}
 		
 		System.out.println("Top Songs");
