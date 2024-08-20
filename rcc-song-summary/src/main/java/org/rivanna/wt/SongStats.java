@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -127,9 +128,25 @@ public class SongStats {
 		}
 		
 		ret.songCount.keySet().forEach(title -> {
-			ret.songTitles.put(StringUtils.lowerCase(title), title);
+			ret.songTitles.put(normalizeTitle(title), title);
 		});
 		
 		return ret;
+	}
+	
+	public static String normalizeTitle(String title) {
+		var ret = title.toLowerCase();
+		
+		// Remove CCLI number for lookup
+		var i = title.lastIndexOf(' ');
+		if (NumberUtils.toInt(title.substring(i + 1)) > 100) {
+			ret = ret.substring(0, i);
+		}
+		
+		ret = StringUtils.replaceChars(ret, ",'’!", null);
+		
+		ret = StringUtils.substringBefore(ret, "(");
+		
+		return StringUtils.trimToNull(ret);
 	}
 }

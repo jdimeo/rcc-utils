@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +59,12 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 			}
 		}
 		
-		var count = stats.getSongCount().remove(stats.getSongTitles().get(StringUtils.lowerCase(song.getTitle())));
+		song.setTitle(Objects.toString(song.getTitle(), p.getFileName().toString()).trim());
+		
+		var normTitle = SongStats.normalizeTitle(song.getTitle());
+		log.debug("{} normalized to {}", song.getTitle(), normTitle);
+		
+		var count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
 		
 		var r = sheet.createRow(row++);
 		newCell(r, 0, p.getParent().getFileName().toString());
@@ -72,7 +78,7 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	
 	@Override
 	public void close() throws IOException {
-		log.info("Remaining songs: {}", stats.getSongCount());
+		log.info("Remaining songs: {} {}", stats.getSongCount().size(), stats.getSongCount());
 		
 		try (var os = Files.newOutputStream(Path.of("RCC Song List.xlsx"))) {
 			wb.write(os);	
