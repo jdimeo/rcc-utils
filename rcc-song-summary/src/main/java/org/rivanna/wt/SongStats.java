@@ -22,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.elderresearch.commons.lang.CalendarUtils;
 import com.elderresearch.commons.lang.extract.DateExtractor;
 import com.elderresearch.commons.lang.extract.LocalityLevel;
+import com.google.common.collect.Range;
 
 import lombok.Getter;
 
@@ -36,6 +37,7 @@ public class SongStats {
 	private Map<String, Leader> leaders = new HashMap<>();
 	private Map<String, Integer> songCount = new HashMap<>();
 	private Map<String, String> songTitles = new HashMap<>();
+	private Map<String, Range<Date>> songDates = new HashMap<>();
 	
 	@SuppressWarnings("serial")
 	private static final Map<String, String> LEADER_FIXES = new HashMap<String, String>() {{
@@ -104,7 +106,7 @@ public class SongStats {
 						if (cell.getCellType() == CellType.NUMERIC) {
 							d = cell.getDateCellValue();
 						} else {
-							String s = StringUtils.substringBefore(cell.getStringCellValue(), " ");
+							String s = StringUtils.substringBefore(StringUtils.substringBefore(cell.getStringCellValue(), " "), "(");
 							d = de.parse(s);
 							if (d == null && !s.isEmpty()) { System.err.println("Failed to parse " + s); }
 						}
@@ -120,6 +122,8 @@ public class SongStats {
 						}
 						list.add(d);
 						l.total++;
+						
+						ret.songDates.merge(song, Range.singleton(d), (r1, r2) -> r1.span(r2));
 						
 						ret.songCount.put(song, ret.songCount.getOrDefault(song, 0) + 1);
 					}

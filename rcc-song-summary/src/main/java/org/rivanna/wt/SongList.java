@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -42,11 +44,15 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	private Sheet sheet;
 	private int row = 1;
 	private SongStats stats;
+	private CellStyle dateStyle;
 	
 	public SongList(Path statsPath) throws InvalidFormatException, IOException {
 		wb = new XSSFWorkbook(Path.of("RCC Song List Template.xlsx").toFile());
 		sheet = wb.getSheetAt(0);
 		stats = SongStats.parse(statsPath, 0);
+		
+		dateStyle = wb.createCellStyle();
+	    dateStyle.setDataFormat((short)14);
 	}
 	
 	@Override
@@ -66,8 +72,11 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		log.debug("{} normalized to {}", song.getTitle(), normTitle);
 		
 		var count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
+		var dates = stats.getSongDates().get(stats.getSongTitles().get(normTitle));
 		if (count == null) {
-			count = stats.getSongCount().remove(stats.getSongTitles().get(SongStats.normalizeTitle(p.getFileName().toString())));
+			normTitle = SongStats.normalizeTitle(p.getFileName().toString());
+			count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
+			dates = stats.getSongDates().get(stats.getSongTitles().get(normTitle));
 		}
 		
 		var r = sheet.createRow(row++);
@@ -75,9 +84,15 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		newCell(r, 1, song.getTitle());
 		newCell(r, 2, song.getProvenance());
 		newCell(r ,3, song.getSongApproval());
-		if (count != null) { r.createCell(4, CellType.NUMERIC).setCellValue(count); }
-		newCell(r, 5, song.getAuthor());
-		newCell(r, 6, song.getCopyright());
+		if (count != null) {
+			r.createCell(4, CellType.NUMERIC).setCellValue(count);
+		}
+		if (dates != null) {
+			newCell(r, 5, dates.upperEndpoint()).setCellStyle(dateStyle);
+			newCell(r, 6, dates.lowerEndpoint()).setCellStyle(dateStyle);
+		}
+		newCell(r, 7, song.getAuthor());
+		newCell(r, 8, song.getCopyright());
 	}
 	
 	@Override
@@ -93,6 +108,12 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	private static Cell newCell(Row r, int c, String s) {
 		var ret = r.createCell(c, CellType.STRING);
 		ret.setCellValue(s);
+		return ret;
+	}
+	
+	private static Cell newCell(Row r, int c, Date d) {
+		var ret = r.createCell(c, CellType.NUMERIC);
+		ret.setCellValue(d);
 		return ret;
 	}
 }
