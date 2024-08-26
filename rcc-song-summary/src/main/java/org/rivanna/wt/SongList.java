@@ -5,12 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -24,7 +26,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jooq.lambda.Seq;
 
 import com.elderresearch.commons.lang.LambdaUtils;
-import com.elderresearch.commons.lang.Utilities;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
@@ -32,6 +33,10 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
+	private static final String[] STOPWORDS = {
+		"and", "a", "of", "the"
+	};
+	
 	public static void main(String[] args) throws IOException, InvalidFormatException {
 		var mapper = XmlMapper.builder().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
 		try (var list = new SongList(Path.of(SystemUtils.USER_HOME, "Dropbox", "RCC WT", "RCC Song Summary.xlsx"))) {
@@ -51,12 +56,13 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 	private SongStats stats;
 	private CellStyle dateStyle;
 	
+	private Set<String> provenances = new TreeSet<>();
 	private Map<String, Map<String, Integer>> wordCountsByProvenance = new TreeMap<>();
 	
 	public SongList(Path statsPath) throws InvalidFormatException, IOException {
 		wb = new XSSFWorkbook(Path.of("RCC Song List Template.xlsx").toFile());
 		sheet = wb.getSheetAt(0);
-		// countSheet = wb.getSheetAt(1);
+		countSheet = wb.getSheetAt(1);
 		stats = SongStats.parse(statsPath, 0);
 		
 		dateStyle = wb.createCellStyle();
@@ -75,16 +81,22 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		}
 		
 		LambdaUtils.accept(StringUtils.stripToNull(song.getLyrics()), lyrics -> {
-			var wordCounts = wordCountsByProvenance.computeIfAbsent(StringUtils.defaultIfBlank(song.getProvenance(), "Other"), $ -> new HashMap<>());
+			var prov = StringUtils.defaultIfBlank(song.getProvenance(), "Other");
+			provenances.add(prov);
+			
 			var lines = StringUtils.split(lyrics, "\r\n");
 			for (var line : lines) {
-				if (StringUtils.startsWithAny(line, ".", "[")) { continue; }
+				if (StringUtils.startsWithAny(line, ".", "[", ";")) { continue; }
 				
 				var arr = StringUtils.lowerCase(line).chars().filter($ -> Character.isLetter($) || Character.isSpaceChar($)).toArray();
 				line = new String(arr, 0, arr.length);
 				
 				for (var word : StringUtils.splitByCharacterType(line)) {
-					if (Character.isLetter(word.charAt(0))) { wordCounts.merge(word, 1, (c1, c2) -> c1 + c2); }
+					if (ArrayUtils.contains(STOPWORDS, word)) { continue; }
+					
+					if (Character.isLetter(word.charAt(0))) {
+						wordCountsByProvenance.computeIfAbsent(word, $ -> new TreeMap<>()).merge(prov, 1, (c1, c2) -> c1 + c2);
+					}
 				}
 			}
 		});
@@ -123,7 +135,21 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		log.info("Remaining songs: {}", stats.getSongCount().size());
 		Seq.seq(stats.getSongCount()).sorted($ -> -$.v2).forEach($ -> log.info("{} {}", $.v2, $.v1));
 		
-		log.info(wordCountsByProvenance);
+		var r = 0;
+		var c = 1;
+		
+		var countHeader = countSheet.createRow(r++);
+		for (var p : provenances) { newCell(countHeader, c++, p); }
+		
+		for (var e : wordCountsByProvenance.entrySet()) {
+			var row = countSheet.createRow(r++);
+			newCell(row, 0, e.getKey());
+			
+			c = 1;
+			for (var p : provenances) {
+				row.createCell(c++, CellType.NUMERIC).setCellValue(e.getValue().getOrDefault(p, 0));	
+			}
+		}
 		
 		try (var os = Files.newOutputStream(Path.of("RCC Song List.xlsx"))) {
 			wb.write(os);
