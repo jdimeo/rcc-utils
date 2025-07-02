@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -23,7 +24,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.elderresearch.commons.lang.CalendarUtils;
 import com.elderresearch.commons.lang.extract.DateExtractor;
 import com.elderresearch.commons.lang.extract.LocalityLevel;
-import com.google.common.collect.Range;
+import com.google.common.collect.ImmutableSortedSet;
 
 import lombok.Getter;
 
@@ -31,15 +32,17 @@ import lombok.Getter;
 public class SongStats {
 	@Getter
 	public static class Leader {
+		private String name;
 		private Map<String, List<Date>> songs = new HashMap<>();
 		private int sets, total;
 	}
 	
 	private Map<String, Leader> leaders = new HashMap<>();
+	private Map<Date, String> leadersByDate = new HashMap<>();
 	private Map<String, Integer> songCount = new HashMap<>();
 	private Map<String, Integer> songCountPastYear = new HashMap<>();
 	private Map<String, String> songTitles = new HashMap<>();
-	private Map<String, Range<Date>> songDates = new HashMap<>();
+	private Map<String, Set<Date>> songDates = new HashMap<>();
 	
 	@SuppressWarnings("serial")
 	private static final Map<String, String> LEADER_FIXES = new HashMap<String, String>() {{
@@ -86,6 +89,7 @@ public class SongStats {
 					Leader l = ret.leaders.get(lname);
 					if (l == null) {
 						l = new Leader();
+						l.name = lname;
 						ret.leaders.put(lname, l);
 					}
 					l.sets++;
@@ -125,9 +129,10 @@ public class SongStats {
 							l.songs.put(song, list);
 						}
 						list.add(d);
+						ret.leadersByDate.put(d, l.name);
 						l.total++;
 						
-						ret.songDates.merge(song, Range.singleton(d), (r1, r2) -> r1.span(r2));
+						ret.songDates.merge(song, Set.of(d), (r1, r2) -> ImmutableSortedSet.<Date>naturalOrder().addAll(r1).addAll(r2).build());
 						
 						ret.songCount.put(song, ret.songCount.getOrDefault(song, 0) + 1);
 						

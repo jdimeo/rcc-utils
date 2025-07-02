@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -128,8 +129,11 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 			r.createCell(5, CellType.NUMERIC).setCellValue(yearAgoCount);
 		}
 		if (dates != null) {
-			newCell(r, 6, dates.upperEndpoint()).setCellStyle(dateStyle);
-			newCell(r, 7, dates.lowerEndpoint()).setCellStyle(dateStyle);
+			newCell(r, 6, Seq.seq(dates).findFirst().orElse(null)).setCellStyle(dateStyle);
+			newCell(r, 7, Seq.seq(dates).findLast().orElse(null)).setCellStyle(dateStyle);
+			newCell(r, 10, Seq.seq(dates).map(d -> {
+				return DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(d) + " " + stats.getLeadersByDate().get(d);
+			}).toString(", "));
 		}
 		newCell(r, 8, song.getAuthor());
 		newCell(r, 9, song.getCopyright());
