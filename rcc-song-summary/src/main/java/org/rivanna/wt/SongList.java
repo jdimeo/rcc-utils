@@ -108,10 +108,12 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		
 		var count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
 		var dates = stats.getSongDates().get(stats.getSongTitles().get(normTitle));
+		var yearAgoCount = stats.getSongCountPastYear().get(stats.getSongTitles().get(normTitle));
 		if (count == null) {
 			normTitle = SongStats.normalizeTitle(p.getFileName().toString());
 			count = stats.getSongCount().remove(stats.getSongTitles().get(normTitle));
 			dates = stats.getSongDates().get(stats.getSongTitles().get(normTitle));
+			yearAgoCount = stats.getSongCountPastYear().get(stats.getSongTitles().get(normTitle));
 		}
 		
 		var r = sheet.createRow(row++);
@@ -122,12 +124,15 @@ public class SongList implements BiConsumer<Path, OpenSongSong>, AutoCloseable {
 		if (count != null) {
 			r.createCell(4, CellType.NUMERIC).setCellValue(count);
 		}
-		if (dates != null) {
-			newCell(r, 5, dates.upperEndpoint()).setCellStyle(dateStyle);
-			newCell(r, 6, dates.lowerEndpoint()).setCellStyle(dateStyle);
+		if (yearAgoCount != null) {
+			r.createCell(5, CellType.NUMERIC).setCellValue(yearAgoCount);
 		}
-		newCell(r, 7, song.getAuthor());
-		newCell(r, 8, song.getCopyright());
+		if (dates != null) {
+			newCell(r, 6, dates.upperEndpoint()).setCellStyle(dateStyle);
+			newCell(r, 7, dates.lowerEndpoint()).setCellStyle(dateStyle);
+		}
+		newCell(r, 8, song.getAuthor());
+		newCell(r, 9, song.getCopyright());
 	}
 	
 	@Override

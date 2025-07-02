@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -36,6 +37,7 @@ public class SongStats {
 	
 	private Map<String, Leader> leaders = new HashMap<>();
 	private Map<String, Integer> songCount = new HashMap<>();
+	private Map<String, Integer> songCountPastYear = new HashMap<>();
 	private Map<String, String> songTitles = new HashMap<>();
 	private Map<String, Range<Date>> songDates = new HashMap<>();
 	
@@ -57,6 +59,8 @@ public class SongStats {
 	
 	public static SongStats parse(Path file, int year) throws IOException {
 		DateExtractor de = DateExtractor.getInstance(LocalityLevel.LANGUAGE);
+		
+		var yearAgo = DateUtils.addYears(new Date(), -1);
 		
 		var ret = new SongStats();
 		try (var fis = Files.newInputStream(file); Workbook wb = new XSSFWorkbook(fis)) {
@@ -126,6 +130,10 @@ public class SongStats {
 						ret.songDates.merge(song, Range.singleton(d), (r1, r2) -> r1.span(r2));
 						
 						ret.songCount.put(song, ret.songCount.getOrDefault(song, 0) + 1);
+						
+						if (d.after(yearAgo)) {
+							ret.songCountPastYear.put(song, ret.songCountPastYear.getOrDefault(song, 0) + 1);	
+						}
 					}
 				}
 			}
